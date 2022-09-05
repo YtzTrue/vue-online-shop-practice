@@ -2,9 +2,9 @@
 <!-- eslint-disable max-len -->
 <template>
   <li class="catalog__item">
-    <a class="catalog__pic" href="#" @click.prevent="gotoPage('product', { id: product.id })">
+    <router-link class="catalog__pic" :to="{name: 'product', params: {id: product.id}}">
       <img :src="product.image" :alt="product.title">
-    </a>
+    </router-link>
 
     <h3 class="catalog__title">
       <a href="#">
@@ -23,7 +23,6 @@
 </template>
 
 <script>
-import gotoPage from '@/helpers/gotoPage';
 import ColorItem from '@/components/ColorItem.vue';
 import formatNumber from '@/helpers/formatNumber';
 
@@ -35,9 +34,6 @@ export default {
   },
   filters: {
     formatNumber,
-  },
-  methods: {
-    gotoPage,
   },
   props: ['product'],
   components: { ColorItem },

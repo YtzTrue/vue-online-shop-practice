@@ -1,19 +1,9 @@
 <template>
 <div>
   <h1>Упс... Мы не смогли найти эту страницу:(</h1>
-  <a href="#" @click.prevent="gotoPage('main')">Перейти в каталог</a>
+  <router-link :to="{name: 'main'}">Перейти в каталог</router-link>
 </div>
 </template>
-
-<script>
-import gotoPage from '@/helpers/gotoPage';
-
-export default {
-  methods: {
-    gotoPage,
-  },
-};
-</script>
 
 <style scoped>
   div {
