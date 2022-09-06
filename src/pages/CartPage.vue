@@ -18,7 +18,7 @@
         Корзина
       </h1>
       <span class="content__info">
-        {{ products.length }} товара
+        {{ totalAmount }} товаров
       </span>
     </div>
 
@@ -54,7 +54,7 @@ import formatNumber from '@/helpers/formatNumber';
 
 export default {
   computed: {
-    ...mapGetters({ products: 'cartDetailProducts', totalPrice: 'cartTotalPrice' }),
+    ...mapGetters({ products: 'cartDetailProducts', totalPrice: 'cartTotalPrice', totalAmount: 'cartTotalAmount' }),
   },
   components: { CartItem },
   filters: {

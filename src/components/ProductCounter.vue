@@ -8,7 +8,7 @@
       </svg>
     </button>
 
-    <input type="text" v-bind:value="productAmount" v-on:input="$emit('value-change', $event.target.value)">
+    <input type="numder" v-bind:value="productAmount" v-on:input="$emit('value-change', $event.target.value)">
 
     <button type="button" aria-label="Добавить один товар" @click="increment">
       <svg width="12" height="12" fill="currentColor">
