@@ -17,8 +17,9 @@
     </b>
 
     <button class="product__del button-del" type="button" aria-label="Удалить товар из корзины"
-      @click.prevent="deleteProduct(item.productId)">
-      <svg width="20" height="20" fill="currentColor">
+      @click.prevent="deleteProduct" style="position: relative;">
+      <BasePreloader v-if="productDeleting" />
+      <svg v-else width="20" height="20" fill="currentColor">
         <use xlink:href="#icon-close"></use>
       </svg>
     </button>
@@ -27,10 +28,16 @@
 
 <script>
 import formatNumber from '@/helpers/formatNumber';
-import { mapMutations } from 'vuex';
+import { mapActions } from 'vuex';
 import ProductCounter from './ProductCounter.vue';
+import BasePreloader from './BasePreloader.vue';
 
 export default {
+  data() {
+    return {
+      productDeleting: false,
+    };
+  },
   filters: { formatNumber },
   props: ['item'],
   computed: {
@@ -39,13 +46,20 @@ export default {
         return this.item.amount;
       },
       set(value) {
-        this.$store.commit('updateCartProductAmount', { productId: this.item.productId, amount: value });
+        this.$store.dispatch('updateCartProductAmount', { productId: this.item.productId, amount: value });
       },
     },
   },
   methods: {
-    ...mapMutations({ deleteProduct: 'deleteCartProduct' }),
+    ...mapActions(['deleteProductFromCart']),
+    deleteProduct() {
+      this.productDeleting = true;
+      this.deleteProductFromCart({ productId: this.item.productId })
+        .then(() => {
+          this.productDeleting = false;
+        });
+    },
   },
-  components: { ProductCounter },
+  components: { ProductCounter, BasePreloader },
 };
 </script>

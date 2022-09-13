@@ -30,7 +30,7 @@
       <fieldset class="form__block">
         <legend class="form__legend">Цвет</legend>
         <ul class="colors">
-          <ColorItem v-for="color in colors" :key="color" :color="color" v-model="currentColor" />
+          <ColorItem v-for="color in colors" :key="color.id" :color="color" v-model="currentColor" />
         </ul>
       </fieldset>
 
@@ -105,8 +105,8 @@
 </template>
 
 <script>
-import categories from '@/data/categories';
-import colors from '@/data/colors';
+import axios from 'axios';
+import { API_BASE_URL } from '@/config';
 import ColorItem from './ColorItem.vue';
 
 export default {
@@ -116,15 +116,17 @@ export default {
       currentPriceTo: 0,
       currentCategoryId: 0,
       currentColor: 0,
+      categoriesData: null,
+      colorsData: null,
     };
   },
   props: ['priceFrom', 'priceTo', 'categoryId', 'colorFind'],
   computed: {
-    categories() {
-      return categories;
-    },
     colors() {
-      return colors;
+      return this.colorsData ? this.colorsData.items : [];
+    },
+    categories() {
+      return this.categoriesData ? this.categoriesData.items : [];
     },
   },
   watch: {
@@ -154,6 +156,20 @@ export default {
       this.$emit('update:categoryId', 0);
       this.$emit('update:colorFind', 0);
     },
+    loadCategories() {
+      axios.get(`${API_BASE_URL}/productCategories`)
+        // eslint-disable-next-line no-return-assign
+        .then((response) => this.categoriesData = response.data);
+    },
+    loadColors() {
+      axios.get(`${API_BASE_URL}/colors`)
+        // eslint-disable-next-line no-return-assign
+        .then((response) => this.colorsData = response.data);
+    },
+  },
+  created() {
+    this.loadCategories();
+    this.loadColors();
   },
   components: { ColorItem },
 };

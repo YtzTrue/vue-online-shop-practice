@@ -2,7 +2,11 @@
 <!-- eslint-disable vuejs-accessibility/label-has-for -->
 <!-- eslint-disable max-len -->
 <template>
-  <main class="content container">
+  <main class="content container" v-if="productLoading" style="display: flex; position: relative;">
+    <BasePreloader />
+  </main>
+  <main class="content container" v-else-if="!productData">Ошибка при загрузке товара</main>
+  <main class="content container" v-else>
     <div class="content__top">
       <ul class="breadcrumbs">
         <li class="breadcrumbs__item">
@@ -25,8 +29,9 @@
 
     <section class="item">
       <div class="item__pics pics">
-        <div class="pics__wrapper">
-          <img width="570" height="570" :src="product.image" :alt="product.title">
+        <div class="pics__wrapper" style="position: relative;">
+          <BasePreloader v-if="productAddSending"></BasePreloader>
+          <img width="570" height="570" :src="product.image.file.url" :alt="product.title">
         </div>
       </div>
 
@@ -81,11 +86,12 @@
 
             <div class="item__row">
               <ProductCounter v-model.number="productAmount" />
-
-              <button class="button button--primery" type="submit">
-                В корзину
+              <button class="button button--primery" type="submit" :disabled="productAddSending" style="display: flex; justify-content: center;">
+                <span>В корзину</span>
               </button>
             </div>
+            <div v-show="productAdded">Товар добавлен в корзину</div>
+            <div v-show="productAddSending">Добавление в корзину...</div>
           </form>
         </div>
       </div>
@@ -155,16 +161,23 @@
 </template>
 
 <script>
-import products from '@/data/products';
-import categories from '@/data/categories';
 import formatNumber from '@/helpers/formatNumber';
 import ColorItem from '@/components/ColorItem.vue';
 import ProductCounter from '@/components/ProductCounter.vue';
+import axios from 'axios';
+import { API_BASE_URL } from '@/config';
+import { mapActions } from 'vuex';
+import BasePreloader from '@/components/BasePreloader.vue';
 
 export default {
   data() {
     return {
       productAmount: 1,
+      productData: null,
+      productLoading: false,
+      productLoadingFailed: false,
+      productAdded: false,
+      productAddSending: false,
     };
   },
   filters: {
@@ -172,20 +185,47 @@ export default {
   },
   computed: {
     product() {
-      return products.find((product) => product.id === +this.$route.params.id);
+      return this.productData;
     },
     category() {
-      return categories.find((category) => category.id === this.product.categoryId);
+      return this.productData.category;
     },
   },
   methods: {
+    ...mapActions(['addProductToCart']),
     addToCart() {
-      this.$store.commit(
-        'addProductToCart',
-        { productId: this.product.id, amount: this.productAmount },
-      );
+      this.productAdded = false;
+      this.productAddSending = true;
+      this.addProductToCart({ productId: this.product.id, amount: this.productAmount })
+        .then(() => {
+          this.productAdded = true;
+          this.productAddSending = false;
+        });
+    },
+    loadProduct() {
+      this.productLoading = true;
+      this.productLoadingFailed = false;
+      clearTimeout(this.loadProductTimer);
+      this.loadProductTimer = setTimeout(() => {
+        axios.get(`${API_BASE_URL}/products/${this.$route.params.id}`)
+          // eslint-disable-next-line no-return-assign
+          .then((response) => this.productData = response.data)
+          // eslint-disable-next-line no-return-assign
+          .catch(() => this.productLoadingFailed = true)
+          // eslint-disable-next-line no-return-assign
+          .then(() => this.productLoading = false);
+      }, 0);
     },
   },
-  components: { ColorItem, ProductCounter },
+  watch: {
+    // eslint-disable-next-line func-names
+    '$route.params.id': {
+      handler() {
+        this.loadProduct();
+      },
+      immediate: true,
+    },
+  },
+  components: { ColorItem, ProductCounter, BasePreloader },
 };
 </script>
