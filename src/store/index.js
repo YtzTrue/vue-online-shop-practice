@@ -8,12 +8,19 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    cartProducts: [
-    ],
+    cartProducts: [],
     userAccessKey: null,
     cartProductsData: [],
+    orderInfo: null,
   },
   mutations: {
+    updateOrderInfo(state, orderInfo) {
+      state.orderInfo = orderInfo;
+    },
+    resetCart(state) {
+      state.cartProducts = [];
+      state.cartProductsData = [];
+    },
     updateCartProductAmount(state, { productId, amount }) {
       const item = state.cartProducts.find((i) => i.productId === productId);
       if (item) {
@@ -37,6 +44,13 @@ export default new Vuex.Store({
     },
   },
   getters: {
+    orderDetailProducts(state) {
+      return state.orderInfo.basket.items.map((item) => ({
+        ...item,
+        productId: item.product.id,
+        amount: item.quantity,
+      }));
+    },
     cartDetailProducts(state) {
       return state.cartProducts.map((item) => {
         // eslint-disable-next-line prefer-destructuring
@@ -59,6 +73,16 @@ export default new Vuex.Store({
     },
   },
   actions: {
+    loadOrderInfo(context, orderId) {
+      return axios.get(`${API_BASE_URL}/orders/${orderId}`, {
+        params: {
+          userAccessKey: context.state.userAccessKey,
+        },
+      })
+        .then((response) => {
+          context.commit('updateOrderInfo', response.data);
+        });
+    },
     loadCart(context) {
       return axios.get(`${API_BASE_URL}/baskets`, {
         params: {
