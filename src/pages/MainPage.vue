@@ -1,4 +1,3 @@
-<!-- eslint-disable max-len -->
 <template>
   <main class="content container">
     <div class="content__top content__top--catalog">
@@ -6,7 +5,7 @@
         Каталог
       </h1>
       <span v-if="productsData" class="content__info">
-        {{ productsData.pagination.total }} товара
+        {{ productsData.pagination.total }} товаров
       </span>
     </div>
 
